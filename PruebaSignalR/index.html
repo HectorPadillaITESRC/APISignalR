@@ -1,0 +1,52 @@
+﻿<html>
+<head>
+    <title>Ejemplo de SignalR</title>
+</head>
+<body>
+    <input type="text" id="txtNombre" />
+    <input type="button" value="Agregar" id="btnAgregar" />
+    <input type="button" value="Eliminar" id="btnEliminar" />
+    <br />
+    <select size="20" style="width:300px" id="lstNombres">
+    </select>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("https://octavo.itesrc.net/nombres", {
+                skipNegotiation: true,
+                transport: signalR.HttpTransportType.WebSockets,
+            })
+            .withAutomaticReconnect()
+            .build();
+
+        async function start() {
+            try {
+                await connection.start();
+                console.log("SignalR Connected.");
+            } catch (err) {
+                console.log(err);
+                setTimeout(start, 5000);
+            }
+        };
+
+        var lst = document.querySelector("#lstNombres");
+
+        connection.on("NombreNuevo", (nombre) => {
+            var option = document.createElement("OPTION");
+            option.textContent = nombre;
+            lst.appendChild(option);
+        });
+
+        connection.on("NombreBorrado", (nombre) => {
+
+            for (o of lst.children)
+                if(o.textContent==nombre)
+                    o.remove();
+
+        });
+
+        start();
+    </script>
+</body>
+</html>
